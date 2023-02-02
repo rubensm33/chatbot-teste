@@ -1,7 +1,6 @@
 import logging
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes
-
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -27,3 +26,21 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    
+    reply_help=[["/start", "/help", "/create"]]
+    
+    await update.message.reply_text("""
+    The following commands are available:
+    
+    /start -> Welcome to the channel)
+    /help -> This message
+    /create -> Create New User 
+
+    """,
+    reply_markup=ReplyKeyboardMarkup(
+            reply_help, one_time_keyboards=True, input_field_placeholder="Choose one")
+
+     )
