@@ -1,5 +1,4 @@
 import logging
-from telegram import __version__ as TG_VER
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ApplicationBuilder, Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler,filters
 
