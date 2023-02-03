@@ -18,15 +18,17 @@ async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     )
     
 async def help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    '''Iniciate help offering the options below to select'''
+
     reply_help = [["/start", "/help", "/create"]]
 
     await update.message.reply_text('''
         
-    The following commands are available:
+    The following commands are available:\n\n
     
-    /start -> Welcome to the channel)
-    /help -> This message
-    /create -> Create New User 
+    /start -> Welcome to the channel\n
+    /help -> This message\n
+    /create -> Create New User\n 
 
     ''',
     reply_markup=ReplyKeyboardMarkup(
@@ -95,7 +97,7 @@ async def genre(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationHan
     )
     return ConversationHandler.END
 
-async def cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationHandler:
+async def cancel(update:Update,_:ContextTypes.DEFAULT_TYPE)->ConversationHandler:
     """Cancel create user
 
     Returns:
@@ -104,7 +106,11 @@ async def cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationHa
     await update.message.reply_text("The operation will be canceled", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-async def retrieve(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+async def retrieve(update:Update,context:ContextTypes.DEFAULT_TYPE)->None:
+    '''Retrive user
+    
+    Returns
+        ConversationHandler: retrieve user'''
 
     await update.message.reply_text(f'These are all users')
     
