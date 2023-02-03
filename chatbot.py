@@ -16,6 +16,24 @@ async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "Hello there, My name is FolzeckGroup Bot, type /help to open the functionalities of our system"
     )
+    
+async def help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    reply_help = [["/start", "/help", "/create"]]
+
+    await update.message.reply_text('''
+        
+    The following commands are available:
+    
+    /start -> Welcome to the channel)
+    /help -> This message
+    /create -> Create New User 
+
+    ''',
+    reply_markup=ReplyKeyboardMarkup(
+            reply_help, one_time_keyboards=True, input_field_placeholder="Choose one"
+        ),
+    )
+
 
 async def create(update: Update, _: ContextTypes.DEFAULT_TYPE) -> NAME:
     """Iniciate creation user and ask for name
@@ -86,6 +104,12 @@ async def cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationHa
     await update.message.reply_text("The operation will be canceled", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+async def retrieve(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+
+    await update.message.reply_text(f'These are all users')
+    
+    return ConversationHandler.END
+
 
 def main() -> None:
     """Run the bot."""
@@ -106,27 +130,14 @@ def main() -> None:
 
     app.add_handler(conv_handler)
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help))
+    app.add_handler(CommandHandler("retrieve", retrieve))
     app.run_polling()
 
 
 if __name__ == "__main__":
     main()
 
-"""
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    reply_help = [["/start", "/help", "/create"]]
 
-    await update.message.reply_text(
-        
-    The following commands are available:
-    
-    /start -> Welcome to the channel)
-    /help -> This message
-    /create -> Create New User 
 
-    ,
-        reply_markup=ReplyKeyboardMarkup(
-            reply_help, one_time_keyboards=True, input_field_placeholder="Choose one"
-        ),
-    )
-"""
+
