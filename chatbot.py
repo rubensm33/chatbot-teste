@@ -7,8 +7,9 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+import httpx
 
-NAME, LASTNAME, AGE, GENRE = range(4)
+NAME, LASTNAME, AGE, GENRE, RETRIEVE = range(5)
 
 
 async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
@@ -97,8 +98,10 @@ async def age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> GENRE:
     return GENRE
 
 
-async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ConversationHandler:
-    """_Save genre and finsh create user
+async def genre(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> ConversationHandler:
+    """Save genre and finish create user
 
     Returns:
         ConversationHandler: end create
@@ -107,6 +110,7 @@ async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Conversat
     await update.message.reply_text(
         "Thanks!!! Your user has been registered. See you later."
     )
+    post_user = httpx.post("http://127.0.0.1:8000/add-user", json=context.user_data)
     return ConversationHandler.END
 
 
@@ -127,9 +131,38 @@ async def retrieve(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
     Returns
         ConversationHandler: retrieve user"""
+    retrieve_users = httpx.get("http://127.0.0.1:8000/list-users")
+    dict_format = "Name: {name}\nLastname: {lastname}\nAge: {age}\nGenre: {genre}"
 
-    await update.message.reply_text(f"These are all users{_.user_data}")
+    users = "".join(
+        [dict_format.format_map(user) + "\n" for user in retrieve_users.json()]
+    )
+    await update.message.reply_text(f"These are all users\n\n{users}")
 
+    return ConversationHandler.END
+
+
+async def retrieve_by_index(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    """Retrieve by Index
+
+    Returns:
+        RETRIEVE: Retrieve state
+    """
+    await update.message.reply_text("Select an user by Index")
+    return RETRIEVE
+
+
+async def return_retrieve(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    """Retrieve by Index
+
+    Returns:
+        ConversationHandler: retrieve user
+    """
+    reply_user = update.message.text
+    retrieve_user = httpx.get(f"http://127.0.0.1:8000/list-user-by-index/{reply_user}")
+    await update.message.reply_text(
+        f"These are the user selected\n\n{retrieve_user.text}"
+    )
     return ConversationHandler.END
 
 
@@ -150,11 +183,20 @@ def main() -> None:
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
-    app.add_handler(CommandHandler("retrieve", retrieve))
-    app.add_handler(conv_handler)
+
+    conv_retrieve = ConversationHandler(
+        entry_points=[CommandHandler("retrieve_by_index", retrieve_by_index)],
+        states={
+            RETRIEVE: [MessageHandler(filters.TEXT, return_retrieve)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help))
+    app.add_handler(conv_handler)
     app.add_handler(CommandHandler("retrieve", retrieve))
+    app.add_handler(conv_retrieve)
     app.run_polling()
 
 
