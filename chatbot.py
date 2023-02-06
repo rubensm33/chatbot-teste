@@ -21,7 +21,7 @@ async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 async def help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     """Iniciate help offering the options below to select"""
 
-    reply_help = [["/start", "/help", "/create"]]
+    reply_help = [["/start", "/help", "/create", "/retrieve"]]
 
     await update.message.reply_text(
         """
@@ -30,7 +30,8 @@ async def help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     
     /start -> Welcome to the channel\n
     /help -> This message\n
-    /create -> Create New User\n 
+    /create -> Create New User\n
+    /retrieve -> Retrieve all users\n
 
     """,
         reply_markup=ReplyKeyboardMarkup(
@@ -53,16 +54,14 @@ async def create(update: Update, _: ContextTypes.DEFAULT_TYPE) -> NAME:
     return NAME
 
 
-async def name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> LASTNAME:
+async def name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> LASTNAME:
     """Save name and ask for lastname
 
     Returns:
         LASTNAME: lastname state
     """
-    _.user_data["name"] = update.message.text
-    await update.message.reply_text(
-        "And about your last name?",
-    )
+    context.user_data["name"] = update.message.text
+    await update.message.reply_text("And about your last name?")
     return LASTNAME
 
 
@@ -74,18 +73,18 @@ async def lastname(update: Update, _: ContextTypes.DEFAULT_TYPE) -> AGE:
     """
     _.user_data["lastname"] = update.message.text
     await update.message.reply_text(
-        "In order for us to proceed with your service, please enter your age.",
+        "In order for us to proceed with your service, please enter your age."
     )
     return AGE
 
 
-async def age(update: Update, _: ContextTypes.DEFAULT_TYPE) -> GENRE:
+async def age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> GENRE:
     """_Save age and ask for genre
 
     Returns:
         GENRE: genre state
     """
-    _.user_data["age"] = update.message.text
+    context.user_data["age"] = update.message.text
     reply_keyboard = [["Male", "Female"]]
     await update.message.reply_text(
         "Are you a Male or Female?",
@@ -98,13 +97,13 @@ async def age(update: Update, _: ContextTypes.DEFAULT_TYPE) -> GENRE:
     return GENRE
 
 
-async def genre(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationHandler:
+async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ConversationHandler:
     """_Save genre and finsh create user
 
     Returns:
         ConversationHandler: end create
     """
-    _.user_data["genre"] = update.message.text
+    context.user_data["genre"] = update.message.text
     await update.message.reply_text(
         "Thanks!!! Your user has been registered. See you later."
     )
