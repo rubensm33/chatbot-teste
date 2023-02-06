@@ -9,7 +9,18 @@ from telegram.ext import (
 )
 import httpx
 
-NAME, LASTNAME, AGE, GENRE, RETRIEVE = range(5)
+(
+    NAME,
+    LASTNAME,
+    AGE,
+    GENRE,
+    RETRIEVE,
+    NAME_PUT,
+    LASTNAME_PUT,
+    AGE_PUT,
+    GENRE_PUT,
+    INDEX_PUT,
+) = range(10)
 
 
 async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
@@ -110,7 +121,7 @@ async def genre(
     await update.message.reply_text(
         "Thanks!!! Your user has been registered. See you later."
     )
-    post_user = httpx.post("http://127.0.0.1:8000/add-user", json=context.user_data)
+    httpx.post("http://127.0.0.1:8000/add-user", json=context.user_data)
     return ConversationHandler.END
 
 
@@ -166,6 +177,80 @@ async def return_retrieve(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     return ConversationHandler.END
 
 
+async def put(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    """Ask for name to replace
+
+    Returns:
+        NAME_PUT: name_put state
+    """
+    await update.message.reply_text("Which name will replace the previous one")
+    return NAME_PUT
+
+
+async def put_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Save name and Ask for lastname to replace
+
+    Returns:
+        LASTNAME_PUT: lastname_put state
+    """
+    context.user_data["name"] = update.message.text
+    await update.message.reply_text("Which lastname will replace the previous one")
+    return LASTNAME_PUT
+
+
+async def put_lastname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Save lastname and Ask for age to replace
+
+    Returns:
+        AGE_PUT: age_put state
+    """
+    context.user_data["lastname"] = update.message.text
+    await update.message.reply_text("Which age will replace the previous one")
+    return AGE_PUT
+
+
+async def put_age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Save age and Ask for genre to replace
+
+    Returns:
+        GENRE_PUT: genre_put state
+    """
+    context.user_data["age"] = update.message.text
+    reply_keyboard = [["Male", "Female"]]
+    await update.message.reply_text(
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            one_time_keyboard=True,
+            input_field_placeholder="Male or Female",
+        )
+    )
+    return GENRE_PUT
+
+
+async def put_genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Save genre and Ask for index
+
+    Returns:
+        INDEX_PUT: index_put state
+    """
+    context.user_data["genre"] = update.message.text
+    await update.message.reply_text("Select an user by Index")
+    return INDEX_PUT
+
+
+async def return_put(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Replace user
+
+    Returns:
+        ConversationHandler: Change user
+    """
+    reply = update.message.text
+    httpx.post(
+        f"http://127.0.0.1:8000/put-user/{reply}", json=context.user_data
+    )
+    return ConversationHandler.END
+
+
 def main() -> None:
     """Run the bot."""
     app = (
@@ -191,12 +276,24 @@ def main() -> None:
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
+    conv_put = ConversationHandler(
+        entry_points=[CommandHandler("put", put)],
+        states={
+            NAME_PUT: [MessageHandler(filters.TEXT, put_name)],
+            LASTNAME_PUT: [MessageHandler(filters.TEXT, put_lastname)],
+            AGE_PUT: [MessageHandler(filters.TEXT, put_age)],
+            GENRE_PUT: [MessageHandler(filters.TEXT, put_genre)],
+            INDEX_PUT: [MessageHandler(filters.TEXT, return_put)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help))
     app.add_handler(conv_handler)
     app.add_handler(CommandHandler("retrieve", retrieve))
     app.add_handler(conv_retrieve)
+    app.add_handler(conv_put)
     app.run_polling()
 
 
