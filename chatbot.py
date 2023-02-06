@@ -101,7 +101,7 @@ async def age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> GENRE:
 async def genre(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> ConversationHandler:
-    """_Save genre and finsh create user
+    """Save genre and finish create user
 
     Returns:
         ConversationHandler: end create
@@ -111,8 +111,6 @@ async def genre(
         "Thanks!!! Your user has been registered. See you later."
     )
     post_user = httpx.post("http://127.0.0.1:8000/add-user", json=context.user_data)
-    post_user
-
     return ConversationHandler.END
 
 
@@ -143,26 +141,30 @@ async def retrieve(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
     return ConversationHandler.END
 
+
 async def retrieve_by_index(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     """Retrieve by Index
-        
+
     Returns:
         RETRIEVE: Retrieve state
-    """    
+    """
     await update.message.reply_text("Select an user by Index")
     return RETRIEVE
 
 
 async def return_retrieve(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     """Retrieve by Index
-        
+
     Returns:
         ConversationHandler: retrieve user
-    """  
+    """
     reply_user = update.message.text
     retrieve_user = httpx.get(f"http://127.0.0.1:8000/list-user-by-index/{reply_user}")
-    await update.message.reply_text(f"These are the user selected\n\n{retrieve_user.text}")
+    await update.message.reply_text(
+        f"These are the user selected\n\n{retrieve_user.text}"
+    )
     return ConversationHandler.END
+
 
 def main() -> None:
     """Run the bot."""
