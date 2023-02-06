@@ -8,7 +8,7 @@ from telegram.ext import (
     filters,
 )
 
-NAME, LASTNAME, AGE, GENRE = range(4)
+NAME, LASTNAME, AGE, GENRE, RETRIEVE= range(5)
 
 
 async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
@@ -36,7 +36,7 @@ async def help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         ),
     )
 
-
+import httpx
 async def create(update: Update, _: ContextTypes.DEFAULT_TYPE) -> NAME:
     """Iniciate creation user and ask for name
 
@@ -116,8 +116,22 @@ async def retrieve(update:Update,context:ContextTypes.DEFAULT_TYPE)->None:
     
     return ConversationHandler.END
 
+async def retrieve_by_index(update:Update,context:ContextTypes.DEFAULT_TYPE)->None:
+    await update.message.reply_text(f'Select an user by Index')
+    return RETRIEVE 
 
-def main() -> None:
+
+async def return_retrieve(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    reply_user = update.message.text
+
+    retrieve = httpx.get(f'http://127.0.0.1:8000/list-user-by-index/{reply_user}')
+
+    await update.message.reply_text(f'These are the user selected\n\n{retrieve.text}')
+
+    return ConversationHandler.END 
+
+
+def main()->None:
     """Run the bot."""
     app = (
         ApplicationBuilder()
@@ -134,11 +148,23 @@ def main() -> None:
         fallbacks=[CommandHandler("cancel", cancel)],
     )
 
+   
+    conv_retrieve = ConversationHandler(
+        entry_points=[CommandHandler("retrieve_by_index", retrieve_by_index)],
+        states={
+            RETRIEVE: [MessageHandler(filters.TEXT, return_retrieve)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    
+    
+    )
+   
     app.add_handler(conv_handler)
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help))
     app.add_handler(CommandHandler("retrieve", retrieve))
     app.run_polling()
+    app.add_handler(conv_retrieve)
 
 
 if __name__ == "__main__":
