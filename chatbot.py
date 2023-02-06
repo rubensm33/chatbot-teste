@@ -237,7 +237,6 @@ async def put_genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Select an user by Index")
     return INDEX_PUT
 
-
 async def return_put(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Replace user
 
@@ -250,6 +249,14 @@ async def return_put(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     )
     return ConversationHandler.END
 
+async def delete(update: Update, _:ContextTypes.DEFAULT_TYPE)-> None:
+    """Delete all users
+
+    Returns:
+        ConversationHandler: Delete user
+    """
+    httpx.delete("http://127.0.0.1:8000/delete-all")
+    return ConversationHandler.END
 
 def main() -> None:
     """Run the bot."""
@@ -294,6 +301,7 @@ def main() -> None:
     app.add_handler(CommandHandler("retrieve", retrieve))
     app.add_handler(conv_retrieve)
     app.add_handler(conv_put)
+    app.add_handler(CommandHandler("delete", delete))
     app.run_polling()
 
 
